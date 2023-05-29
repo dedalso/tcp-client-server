@@ -28,259 +28,259 @@
         /// </summary>
         private void InitializeComponent()
         {
-            labelDescription = new Label();
-            labelMode = new Label();
-            groupBoxSetup = new GroupBox();
-            radioButtonModeClient = new RadioButton();
-            radioButtonModeServer = new RadioButton();
-            labelIP = new Label();
-            textBoxIP = new TextBox();
-            labelPort = new Label();
-            textBoxPort = new TextBox();
-            buttonConnect = new Button();
-            buttonDisconnect = new Button();
-            groupBoxSend = new GroupBox();
-            buttonSender = new Button();
-            textBoxSender = new TextBox();
-            groupBoxRecieve = new GroupBox();
-            textBoxReciever = new TextBox();
-            labelAuthor = new Label();
-            groupBoxSetup.SuspendLayout();
-            groupBoxSend.SuspendLayout();
-            groupBoxRecieve.SuspendLayout();
+            LabelDescription = new Label();
+            LabelMode = new Label();
+            GroupBoxSetup = new GroupBox();
+            RadioButtonModeClient = new RadioButton();
+            RadioButtonModeServer = new RadioButton();
+            LabelIP = new Label();
+            TextBoxIP = new TextBox();
+            LabelPort = new Label();
+            TextBoxPort = new TextBox();
+            ButtonConnect = new Button();
+            ButtonDisconnect = new Button();
+            GroupBoxSend = new GroupBox();
+            ButtonSender = new Button();
+            TextBoxSender = new TextBox();
+            GroupBoxRecieve = new GroupBox();
+            TextBoxReciever = new TextBox();
+            LabelAuthor = new Label();
+            GroupBoxSetup.SuspendLayout();
+            GroupBoxSend.SuspendLayout();
+            GroupBoxRecieve.SuspendLayout();
             SuspendLayout();
             // 
-            // labelDescription
+            // LabelDescription
             // 
-            labelDescription.Anchor = AnchorStyles.Top;
-            labelDescription.AutoSize = true;
-            labelDescription.Font = new Font("Segoe UI", 14F, FontStyle.Regular, GraphicsUnit.Point);
-            labelDescription.Location = new Point(72, 3);
-            labelDescription.Name = "labelDescription";
-            labelDescription.Size = new Size(200, 25);
-            labelDescription.TabIndex = 0;
-            labelDescription.Text = "TCP/IP клиент-сервер";
+            LabelDescription.Anchor = AnchorStyles.Top;
+            LabelDescription.AutoSize = true;
+            LabelDescription.Font = new Font("Segoe UI", 14F, FontStyle.Regular, GraphicsUnit.Point);
+            LabelDescription.Location = new Point(72, 3);
+            LabelDescription.Name = "LabelDescription";
+            LabelDescription.Size = new Size(200, 25);
+            LabelDescription.TabIndex = 0;
+            LabelDescription.Text = "TCP/IP клиент-сервер";
             // 
-            // labelMode
+            // LabelMode
             // 
-            labelMode.AutoSize = true;
-            labelMode.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMode.Location = new Point(32, 43);
-            labelMode.Name = "labelMode";
-            labelMode.Size = new Size(62, 21);
-            labelMode.TabIndex = 1;
-            labelMode.Text = "Режим:";
+            LabelMode.AutoSize = true;
+            LabelMode.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            LabelMode.Location = new Point(32, 43);
+            LabelMode.Name = "LabelMode";
+            LabelMode.Size = new Size(62, 21);
+            LabelMode.TabIndex = 1;
+            LabelMode.Text = "Режим:";
             // 
-            // groupBoxSetup
+            // GroupBoxSetup
             // 
-            groupBoxSetup.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            groupBoxSetup.Controls.Add(labelMode);
-            groupBoxSetup.Controls.Add(radioButtonModeClient);
-            groupBoxSetup.Controls.Add(radioButtonModeServer);
-            groupBoxSetup.Controls.Add(labelIP);
-            groupBoxSetup.Controls.Add(textBoxIP);
-            groupBoxSetup.Controls.Add(labelPort);
-            groupBoxSetup.Controls.Add(textBoxPort);
-            groupBoxSetup.Controls.Add(buttonConnect);
-            groupBoxSetup.Controls.Add(buttonDisconnect);
-            groupBoxSetup.Location = new Point(12, 40);
-            groupBoxSetup.Name = "groupBoxSetup";
-            groupBoxSetup.Size = new Size(320, 195);
-            groupBoxSetup.TabIndex = 2;
-            groupBoxSetup.TabStop = false;
-            groupBoxSetup.Text = "Настройки";
+            GroupBoxSetup.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            GroupBoxSetup.Controls.Add(LabelMode);
+            GroupBoxSetup.Controls.Add(RadioButtonModeClient);
+            GroupBoxSetup.Controls.Add(RadioButtonModeServer);
+            GroupBoxSetup.Controls.Add(LabelIP);
+            GroupBoxSetup.Controls.Add(TextBoxIP);
+            GroupBoxSetup.Controls.Add(LabelPort);
+            GroupBoxSetup.Controls.Add(TextBoxPort);
+            GroupBoxSetup.Controls.Add(ButtonConnect);
+            GroupBoxSetup.Controls.Add(ButtonDisconnect);
+            GroupBoxSetup.Location = new Point(12, 40);
+            GroupBoxSetup.Name = "GroupBoxSetup";
+            GroupBoxSetup.Size = new Size(320, 195);
+            GroupBoxSetup.TabIndex = 2;
+            GroupBoxSetup.TabStop = false;
+            GroupBoxSetup.Text = "Настройки";
             // 
-            // radioButtonModeClient
+            // RadioButtonModeClient
             // 
-            radioButtonModeClient.AutoSize = true;
-            radioButtonModeClient.Checked = true;
-            radioButtonModeClient.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            radioButtonModeClient.Location = new Point(52, 67);
-            radioButtonModeClient.Name = "radioButtonModeClient";
-            radioButtonModeClient.Size = new Size(78, 25);
-            radioButtonModeClient.TabIndex = 2;
-            radioButtonModeClient.TabStop = true;
-            radioButtonModeClient.Text = "Клиент";
-            radioButtonModeClient.UseVisualStyleBackColor = true;
-            radioButtonModeClient.CheckedChanged += radioButtonModeClient_CheckedChanged;
+            RadioButtonModeClient.AutoSize = true;
+            RadioButtonModeClient.Checked = true;
+            RadioButtonModeClient.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            RadioButtonModeClient.Location = new Point(52, 67);
+            RadioButtonModeClient.Name = "RadioButtonModeClient";
+            RadioButtonModeClient.Size = new Size(78, 25);
+            RadioButtonModeClient.TabIndex = 2;
+            RadioButtonModeClient.TabStop = true;
+            RadioButtonModeClient.Text = "Клиент";
+            RadioButtonModeClient.UseVisualStyleBackColor = true;
+            RadioButtonModeClient.CheckedChanged += RadioButtonModeClient_CheckedChanged;
             // 
-            // radioButtonModeServer
+            // RadioButtonModeServer
             // 
-            radioButtonModeServer.AutoSize = true;
-            radioButtonModeServer.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            radioButtonModeServer.Location = new Point(52, 94);
-            radioButtonModeServer.Name = "radioButtonModeServer";
-            radioButtonModeServer.Size = new Size(80, 25);
-            radioButtonModeServer.TabIndex = 3;
-            radioButtonModeServer.Text = "Сервер";
-            radioButtonModeServer.UseVisualStyleBackColor = true;
-            radioButtonModeServer.CheckedChanged += radioButtonModeServer_CheckedChanged;
+            RadioButtonModeServer.AutoSize = true;
+            RadioButtonModeServer.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            RadioButtonModeServer.Location = new Point(52, 94);
+            RadioButtonModeServer.Name = "RadioButtonModeServer";
+            RadioButtonModeServer.Size = new Size(80, 25);
+            RadioButtonModeServer.TabIndex = 3;
+            RadioButtonModeServer.Text = "Сервер";
+            RadioButtonModeServer.UseVisualStyleBackColor = true;
+            RadioButtonModeServer.CheckedChanged += RadioButtonModeServer_CheckedChanged;
             // 
-            // labelIP
+            // LabelIP
             // 
-            labelIP.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            labelIP.AutoSize = true;
-            labelIP.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            labelIP.Location = new Point(161, 21);
-            labelIP.Name = "labelIP";
-            labelIP.Size = new Size(73, 21);
-            labelIP.TabIndex = 4;
-            labelIP.Text = "IP-адрес:";
+            LabelIP.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            LabelIP.AutoSize = true;
+            LabelIP.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            LabelIP.Location = new Point(161, 21);
+            LabelIP.Name = "LabelIP";
+            LabelIP.Size = new Size(73, 21);
+            LabelIP.TabIndex = 4;
+            LabelIP.Text = "IP-адрес:";
             // 
-            // textBoxIP
+            // TextBoxIP
             // 
-            textBoxIP.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxIP.Location = new Point(164, 49);
-            textBoxIP.MaxLength = 15;
-            textBoxIP.Name = "textBoxIP";
-            textBoxIP.Size = new Size(137, 23);
-            textBoxIP.TabIndex = 5;
+            TextBoxIP.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            TextBoxIP.Location = new Point(164, 49);
+            TextBoxIP.MaxLength = 15;
+            TextBoxIP.Name = "TextBoxIP";
+            TextBoxIP.Size = new Size(137, 23);
+            TextBoxIP.TabIndex = 5;
             // 
-            // labelPort
+            // LabelPort
             // 
-            labelPort.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            labelPort.AutoSize = true;
-            labelPort.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            labelPort.Location = new Point(161, 84);
-            labelPort.Name = "labelPort";
-            labelPort.Size = new Size(49, 21);
-            labelPort.TabIndex = 6;
-            labelPort.Text = "Порт:";
+            LabelPort.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            LabelPort.AutoSize = true;
+            LabelPort.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            LabelPort.Location = new Point(161, 84);
+            LabelPort.Name = "LabelPort";
+            LabelPort.Size = new Size(49, 21);
+            LabelPort.TabIndex = 6;
+            LabelPort.Text = "Порт:";
             // 
-            // textBoxPort
+            // TextBoxPort
             // 
-            textBoxPort.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxPort.Location = new Point(164, 112);
-            textBoxPort.MaxLength = 5;
-            textBoxPort.Name = "textBoxPort";
-            textBoxPort.Size = new Size(137, 23);
-            textBoxPort.TabIndex = 7;
+            TextBoxPort.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            TextBoxPort.Location = new Point(164, 112);
+            TextBoxPort.MaxLength = 5;
+            TextBoxPort.Name = "TextBoxPort";
+            TextBoxPort.Size = new Size(137, 23);
+            TextBoxPort.TabIndex = 7;
             // 
-            // buttonConnect
+            // ButtonConnect
             // 
-            buttonConnect.Location = new Point(18, 153);
-            buttonConnect.Name = "buttonConnect";
-            buttonConnect.Size = new Size(138, 23);
-            buttonConnect.TabIndex = 8;
-            buttonConnect.Text = "Соединиться";
-            buttonConnect.UseVisualStyleBackColor = true;
-            buttonConnect.Click += buttonConnect_Click;
+            ButtonConnect.Location = new Point(18, 153);
+            ButtonConnect.Name = "ButtonConnect";
+            ButtonConnect.Size = new Size(138, 23);
+            ButtonConnect.TabIndex = 8;
+            ButtonConnect.Text = "Соединиться";
+            ButtonConnect.UseVisualStyleBackColor = true;
+            ButtonConnect.Click += ButtonConnect_Click;
             // 
-            // buttonDisconnect
+            // ButtonDisconnect
             // 
-            buttonDisconnect.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            buttonDisconnect.Location = new Point(164, 153);
-            buttonDisconnect.Name = "buttonDisconnect";
-            buttonDisconnect.Size = new Size(138, 23);
-            buttonDisconnect.TabIndex = 9;
-            buttonDisconnect.Text = "Отключиться";
-            buttonDisconnect.UseVisualStyleBackColor = true;
-            buttonDisconnect.Click += buttonDisconnect_Click;
+            ButtonDisconnect.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            ButtonDisconnect.Location = new Point(164, 153);
+            ButtonDisconnect.Name = "ButtonDisconnect";
+            ButtonDisconnect.Size = new Size(138, 23);
+            ButtonDisconnect.TabIndex = 9;
+            ButtonDisconnect.Text = "Отключиться";
+            ButtonDisconnect.UseVisualStyleBackColor = true;
+            ButtonDisconnect.Click += ButtonDisconnect_Click;
             // 
-            // groupBoxSend
+            // GroupBoxSend
             // 
-            groupBoxSend.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            groupBoxSend.Controls.Add(buttonSender);
-            groupBoxSend.Controls.Add(textBoxSender);
-            groupBoxSend.Location = new Point(12, 245);
-            groupBoxSend.Name = "groupBoxSend";
-            groupBoxSend.Size = new Size(320, 76);
-            groupBoxSend.TabIndex = 3;
-            groupBoxSend.TabStop = false;
-            groupBoxSend.Text = "Отправка";
+            GroupBoxSend.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            GroupBoxSend.Controls.Add(ButtonSender);
+            GroupBoxSend.Controls.Add(TextBoxSender);
+            GroupBoxSend.Location = new Point(12, 245);
+            GroupBoxSend.Name = "GroupBoxSend";
+            GroupBoxSend.Size = new Size(320, 76);
+            GroupBoxSend.TabIndex = 3;
+            GroupBoxSend.TabStop = false;
+            GroupBoxSend.Text = "Отправка";
             // 
-            // buttonSender
+            // ButtonSender
             // 
-            buttonSender.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonSender.Location = new Point(239, 21);
-            buttonSender.Name = "buttonSender";
-            buttonSender.Size = new Size(75, 48);
-            buttonSender.TabIndex = 1;
-            buttonSender.Text = "Вперёд!";
-            buttonSender.UseVisualStyleBackColor = true;
-            buttonSender.Click += buttonSender_Click;
+            ButtonSender.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            ButtonSender.Location = new Point(239, 21);
+            ButtonSender.Name = "ButtonSender";
+            ButtonSender.Size = new Size(75, 48);
+            ButtonSender.TabIndex = 1;
+            ButtonSender.Text = "Вперёд!";
+            ButtonSender.UseVisualStyleBackColor = true;
+            ButtonSender.Click += ButtonSender_Click;
             // 
-            // textBoxSender
+            // TextBoxSender
             // 
-            textBoxSender.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxSender.Location = new Point(6, 21);
-            textBoxSender.Multiline = true;
-            textBoxSender.Name = "textBoxSender";
-            textBoxSender.Size = new Size(227, 46);
-            textBoxSender.TabIndex = 0;
+            TextBoxSender.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            TextBoxSender.Location = new Point(6, 21);
+            TextBoxSender.Multiline = true;
+            TextBoxSender.Name = "TextBoxSender";
+            TextBoxSender.Size = new Size(227, 46);
+            TextBoxSender.TabIndex = 0;
             // 
-            // groupBoxRecieve
+            // GroupBoxRecieve
             // 
-            groupBoxRecieve.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            groupBoxRecieve.Controls.Add(textBoxReciever);
-            groupBoxRecieve.Location = new Point(12, 330);
-            groupBoxRecieve.Name = "groupBoxRecieve";
-            groupBoxRecieve.Size = new Size(320, 167);
-            groupBoxRecieve.TabIndex = 4;
-            groupBoxRecieve.TabStop = false;
-            groupBoxRecieve.Text = "Прослушка";
+            GroupBoxRecieve.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            GroupBoxRecieve.Controls.Add(TextBoxReciever);
+            GroupBoxRecieve.Location = new Point(12, 330);
+            GroupBoxRecieve.Name = "GroupBoxRecieve";
+            GroupBoxRecieve.Size = new Size(320, 167);
+            GroupBoxRecieve.TabIndex = 4;
+            GroupBoxRecieve.TabStop = false;
+            GroupBoxRecieve.Text = "Прослушка";
             // 
-            // textBoxReciever
+            // TextBoxReciever
             // 
-            textBoxReciever.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxReciever.Location = new Point(6, 22);
-            textBoxReciever.Multiline = true;
-            textBoxReciever.Name = "textBoxReciever";
-            textBoxReciever.ReadOnly = true;
-            textBoxReciever.Size = new Size(308, 138);
-            textBoxReciever.TabIndex = 0;
+            TextBoxReciever.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            TextBoxReciever.Location = new Point(6, 22);
+            TextBoxReciever.Multiline = true;
+            TextBoxReciever.Name = "TextBoxReciever";
+            TextBoxReciever.ReadOnly = true;
+            TextBoxReciever.Size = new Size(308, 138);
+            TextBoxReciever.TabIndex = 0;
             // 
-            // labelAuthor
+            // LabelAuthor
             // 
-            labelAuthor.Anchor = AnchorStyles.Top;
-            labelAuthor.AutoSize = true;
-            labelAuthor.Location = new Point(139, 26);
-            labelAuthor.Name = "labelAuthor";
-            labelAuthor.Size = new Size(64, 15);
-            labelAuthor.TabIndex = 5;
-            labelAuthor.Text = "by dedalso";
+            LabelAuthor.Anchor = AnchorStyles.Top;
+            LabelAuthor.AutoSize = true;
+            LabelAuthor.Location = new Point(139, 26);
+            LabelAuthor.Name = "LabelAuthor";
+            LabelAuthor.Size = new Size(64, 15);
+            LabelAuthor.TabIndex = 5;
+            LabelAuthor.Text = "by dedalso";
             // 
             // DefaultForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(344, 509);
-            Controls.Add(labelDescription);
-            Controls.Add(labelAuthor);
-            Controls.Add(groupBoxSetup);
-            Controls.Add(groupBoxSend);
-            Controls.Add(groupBoxRecieve);
+            Controls.Add(LabelDescription);
+            Controls.Add(LabelAuthor);
+            Controls.Add(GroupBoxSetup);
+            Controls.Add(GroupBoxSend);
+            Controls.Add(GroupBoxRecieve);
             Name = "DefaultForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "TCP/IP прослушка";
-            groupBoxSetup.ResumeLayout(false);
-            groupBoxSetup.PerformLayout();
-            groupBoxSend.ResumeLayout(false);
-            groupBoxSend.PerformLayout();
-            groupBoxRecieve.ResumeLayout(false);
-            groupBoxRecieve.PerformLayout();
+            GroupBoxSetup.ResumeLayout(false);
+            GroupBoxSetup.PerformLayout();
+            GroupBoxSend.ResumeLayout(false);
+            GroupBoxSend.PerformLayout();
+            GroupBoxRecieve.ResumeLayout(false);
+            GroupBoxRecieve.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
 
-        private Label labelDescription;
-        private Label labelMode;
-        private GroupBox groupBoxSetup;
-        private GroupBox groupBoxSend;
-        private Button buttonSender;
-        private TextBox textBoxSender;
-        private GroupBox groupBoxRecieve;
-        private TextBox textBoxReciever;
-        private RadioButton radioButtonModeServer;
-        private RadioButton radioButtonModeClient;
-        private Label labelIP;
-        private TextBox textBoxIP;
-        private TextBox textBoxPort;
-        private Label labelPort;
-        private Button buttonDisconnect;
-        private Button buttonConnect;
-        private Label labelAuthor;
+        private Label LabelDescription;
+        private Label LabelMode;
+        private GroupBox GroupBoxSetup;
+        private GroupBox GroupBoxSend;
+        private Button ButtonSender;
+        private TextBox TextBoxSender;
+        private GroupBox GroupBoxRecieve;
+        private TextBox TextBoxReciever;
+        private RadioButton RadioButtonModeServer;
+        private RadioButton RadioButtonModeClient;
+        private Label LabelIP;
+        private TextBox TextBoxIP;
+        private TextBox TextBoxPort;
+        private Label LabelPort;
+        private Button ButtonDisconnect;
+        private Button ButtonConnect;
+        private Label LabelAuthor;
     }
 }

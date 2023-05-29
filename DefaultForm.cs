@@ -6,70 +6,88 @@ namespace TCP_Client_Server
 {
     public partial class DefaultForm : Form
     {
-        private int MinimalWidth = 360;
-        private int MinimalHeight = 548;
+        private const int MinimalWidth = 360;
+        private const int MinimalHeight = 548;
         private bool IsClient = true;
         private bool IsConnected = false;
+        private string? ClientIP;
         private IPAddress IP = IPAddress.Any;
         private int Port;
-        private const int PortMaximum = 65536;
-        private TcpListener Listener;
-        private TcpClient Client;
+        private TcpListener? Listener;
+        private TcpClient? Client;
 
         public DefaultForm()
         {
-            InitializeComponent();
             DefaultSetup();
+            this.FormClosing += new FormClosingEventHandler(FormClose);
+            InitializeComponent();
             FormSetup();
         }
 
         private void FormSetup()
         {
             this.MinimumSize = new Size(MinimalWidth, MinimalHeight);
-            textBoxIP.Text = IP.ToString();
-            textBoxPort.Text = Port.ToString();
+            TextBoxIP.Text = IP.ToString();
+            TextBoxPort.Text = Port.ToString();
             ConnectionLocker(false);
+        }
+
+        private void FormClose(object? sender, FormClosingEventArgs e)
+        {
+            if (IsClient)
+            {
+                if (Listener != null)
+                    Listener.Stop();
+            }
+            else if (Client != null)
+                Client.Close();
         }
 
         private void DefaultSetup()
         {
-            //IP = SearchForIP();
+            IP = SearchForIP();
             Port = SearchForPort();
         }
 
         private bool SetIP()
         {
-            string ip = textBoxIP.Text;
+            string ip = TextBoxIP.Text;
             int status = ValidateIP(ip);
+            string messageTitle = "Ошибка IP";
 
             if (status == -1)
             {
-                MessageBox.Show("Ошибка IP", "IP введён в некорректном формате.");
+                MessageBox.Show("IP введён в некорректном формате.", messageTitle);
                 return false;
             }
-            // Проверить IP
+            else if (status == -2)
+            {
+                MessageBox.Show("Указанный порт по этому IP недоступен.", messageTitle);
+                return false;
+            }
             IP = IPAddress.Parse(ip);
             return true;
         }
 
         private bool SetPort()
         {
-            string port = textBoxPort.Text;
+            string port = TextBoxPort.Text;
             int status = ValidatePort(port);
+            string messageTitle = "Ошибка порта";
 
             if (status == -1)
             {
-                MessageBox.Show("Ошибка порта", "Порт введён в нечисловом формате. Задайте порт от 0 до " + PortMaximum + ".");
+                MessageBox.Show("Порт введён в нечисловом формате. Задайте порт от 0 до " + IPEndPoint.MaxPort + ".", messageTitle);
                 return false;
             }
             else if (status == -2)
             {
-                MessageBox.Show("Ошибка порта", "Невозможное значение порта. Задайте порт от 0 до " + PortMaximum + ".");
+                MessageBox.Show("Невозможное значение порта. Задайте порт от 0 до " + IPEndPoint.MaxPort + ".", messageTitle);
                 return false;
             }
             else if (status == -3)
             {
-                MessageBox.Show("Ошибка порта", "Указанный порт занят. Выберите другой порт.");
+                MessageBox.Show("Указанный порт занят или закрыт. Выберите другой порт.", messageTitle);
                 return false;
             }
             Port = int.Parse(port);
@@ -78,14 +96,36 @@ namespace TCP_Client_Server
 
         private int ValidateIP(string ipWanted)
         {
+            IPAddress? ip;
+
             try
             {
-                if (!IPAddress.TryParse(ipWanted, out _))
+                if (!IPAddress.TryParse(ipWanted, out ip))
                     return -1;
             }
             catch (Exception)
             {
                 return -1;
+            }
+
+            try
+            {
+                if (IsClient)
+                {
+                    TcpClient client = new();
+                    client.Connect(ip, Port);
+                    client.Close();
+                }
+                else
+                {
+                    TcpListener listener = new(ip, Port);
+                    listener.Start();
+                    listener.Stop();
+                }
+            }
+            catch (Exception)
+            {
+                return -2;
             }
             return 1;
         }
@@ -103,13 +143,22 @@ namespace TCP_Client_Server
                 return -1;
             }
 
-            if (port > 0 && port < PortMaximum)
+            if (port >= 0 && port <= IPEndPoint.MaxPort)
             {
                 try
                 {
-                    TcpListener listener = new TcpListener(IP, port);
-                    listener.Start();
-                    listener.Stop();
+                    if (IsClient)
+                    {
+                        TcpClient client = new();
+                        client.Connect(IP, port);
+                        client.Close();
+                    }
+                    else
+                    {
+                        TcpListener listener = new(IP, port);
+                        listener.Start();
+                        listener.Stop();
+                    }
                 }
                 catch (SocketException)
                 {
@@ -121,19 +170,14 @@ namespace TCP_Client_Server
             return 1;
         }
 
-        private IPAddress SearchForIP()
+        private static IPAddress SearchForIP()
         {
-            TcpListener listener = new TcpListener(IPAddress.Any, Port);
-            listener.Start();
-            TcpClient client = listener.AcceptTcpClient();
-            IPAddress ip = IPAddress.Parse(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString());
-            listener.Stop();
-            return ip;
+            return Dns.GetHostEntry(Dns.GetHostName()).AddressList.First(addr => addr.AddressFamily == AddressFamily.InterNetwork);
         }
 
-        private int SearchForPort()
+        private static int SearchForPort()
         {
-            TcpListener listener = new TcpListener(IPAddress.Loopback, 0);
+            TcpListener listener = new(IPAddress.Loopback, 0);
             listener.Start();
             int port = ((IPEndPoint)listener.LocalEndpoint).Port;
             listener.Stop();
@@ -142,16 +186,14 @@ namespace TCP_Client_Server
 
         private void ConnectionStart()
         {
-            IPEndPoint endPoint = new IPEndPoint(IP, Port);
-
             if (IsClient)
             {
                 Client = new TcpClient();
-                Client.ConnectAsync(endPoint);
+                Client.Connect(IP, Port);
             }
             else
             {
-                Listener = new TcpListener(endPoint);
+                Listener = new TcpListener(IP, Port);
                 Listener.Start();
             }
         }
@@ -170,52 +212,72 @@ namespace TCP_Client_Server
             //{
             byte[] message = new byte[1024];
             int count = stream.Read(message, 0, message.Length);
-            textBoxReciever.Text = Encoding.Default.GetString(message, 0, count);
+            TextBoxReciever.Text = Encoding.Default.GetString(message, 0, count);
             //}
             //}
         }
 
         private void ConnectionStop()
         {
-            if (!IsClient)
-                Listener.Stop();
+            if (IsClient)
+            {
+
+            }
+            else
+            {
+                if (Listener != null)
+                    Listener.Stop();
+            }
         }
 
         private void ConnectionLocker(bool status)
         {
             if (status)
             {
-                radioButtonModeClient.Enabled = false;
-                radioButtonModeServer.Enabled = false;
-                textBoxIP.Enabled = false;
-                textBoxPort.Enabled = false;
-                buttonConnect.Enabled = false;
-                buttonDisconnect.Enabled = true;
-                buttonSender.Enabled = true;
+                RadioButtonModeClient.Enabled = false;
+                RadioButtonModeServer.Enabled = false;
+                TextBoxIP.Enabled = false;
+                TextBoxPort.ReadOnly = true;
+                ButtonConnect.Enabled = false;
+                ButtonDisconnect.Enabled = true;
+                ButtonSender.Enabled = true;
             }
             else
             {
-                radioButtonModeClient.Enabled = true;
-                radioButtonModeServer.Enabled = true;
-                textBoxIP.Enabled = true;
-                textBoxPort.Enabled = true;
-                buttonConnect.Enabled = true;
-                buttonDisconnect.Enabled = false;
-                buttonSender.Enabled = false;
+                RadioButtonModeClient.Enabled = true;
+                RadioButtonModeServer.Enabled = true;
+
+                if (IsClient)
+                    TextBoxIP.Enabled = true;
+                else
+                    TextBoxIP.Enabled = false;
+                TextBoxPort.ReadOnly = false;
+                ButtonConnect.Enabled = true;
+                ButtonDisconnect.Enabled = false;
+                ButtonSender.Enabled = false;
             }
         }
 
-        private void radioButtonModeClient_CheckedChanged(object sender, EventArgs e)
+        private void RadioButtonModeClient_CheckedChanged(object sender, EventArgs e)
         {
             IsClient = true;
+
+            if (RadioButtonModeClient.Checked)
+                TextBoxIP.Text = ClientIP;
+            TextBoxIP.Enabled = true;
         }
 
-        private void radioButtonModeServer_CheckedChanged(object sender, EventArgs e)
+        private void RadioButtonModeServer_CheckedChanged(object sender, EventArgs e)
         {
             IsClient = false;
+
+            if (RadioButtonModeServer.Checked)
+                ClientIP = TextBoxIP.Text;
+            TextBoxIP.Text = SearchForIP().ToString();
+            TextBoxIP.Enabled = false;
         }
 
-        private void buttonConnect_Click(object sender, EventArgs e)
+        private void ButtonConnect_Click(object sender, EventArgs e)
         {
             if (!IsConnected)
                 if (SetIP() && SetPort())
@@ -226,7 +288,7 @@ namespace TCP_Client_Server
                 }
         }
 
-        private void buttonDisconnect_Click(object sender, EventArgs e)
+        private void ButtonDisconnect_Click(object sender, EventArgs e)
         {
             if (IsConnected)
             {
@@ -236,7 +298,7 @@ namespace TCP_Client_Server
             }
         }
 
-        private void buttonSender_Click(object sender, EventArgs e)
+        private void ButtonSender_Click(object sender, EventArgs e)
         {
 
         }
