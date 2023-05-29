@@ -1,4 +1,6 @@
+using System.Buffers;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 
@@ -36,11 +38,10 @@ namespace TCP_Client_Server
         {
             if (IsClient)
             {
-                if (Listener != null)
-                    Listener.Stop();
+                Listener?.Stop();
             }
-            else if (Client != null)
-                Client.Close();
+            else
+                Client?.Close();
         }
 
         private void DefaultSetup()
@@ -110,20 +111,10 @@ namespace TCP_Client_Server
 
             try
             {
-                if (IsClient)
-                {
-                    TcpClient client = new();
-                    client.Connect(ip, Port);
-                    client.Close();
-                }
-                else
-                {
-                    TcpListener listener = new(ip, Port);
-                    listener.Start();
-                    listener.Stop();
-                }
+                Ping pinger = new Ping();
+                PingReply reply = pinger.Send(ip);
             }
-            catch (Exception)
+            catch (PingException)
             {
                 return -2;
             }
@@ -220,14 +211,9 @@ namespace TCP_Client_Server
         private void ConnectionStop()
         {
             if (IsClient)
-            {
-
-            }
+                Client?.Close();
             else
-            {
-                if (Listener != null)
-                    Listener.Stop();
-            }
+                Listener?.Stop();
         }
 
         private void ConnectionLocker(bool status)
