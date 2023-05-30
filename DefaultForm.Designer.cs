@@ -227,6 +227,7 @@
             TextBoxReciever.Multiline = true;
             TextBoxReciever.Name = "TextBoxReciever";
             TextBoxReciever.ReadOnly = true;
+            TextBoxReciever.ScrollBars = ScrollBars.Vertical;
             TextBoxReciever.Size = new Size(308, 138);
             TextBoxReciever.TabIndex = 0;
             // 
@@ -252,7 +253,7 @@
             Controls.Add(GroupBoxRecieve);
             Name = "DefaultForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "TCP/IP прослушка";
+            Text = "TCP/IP отправка/прослушка";
             GroupBoxSetup.ResumeLayout(false);
             GroupBoxSetup.PerformLayout();
             GroupBoxSend.ResumeLayout(false);
