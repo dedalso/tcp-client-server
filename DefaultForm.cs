@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
@@ -9,8 +10,13 @@ namespace TCP_Client_Server
     {
         private const int MinimalWidth = 360;
         private const int MinimalHeight = 548;
+        private const string ClientStart = "Соединиться";
+        private const string ClientStop = "Отключиться";
+        private const string ServerStart = "Слушать порт";
+        private const string ServerStop = "Закрыть порт";
         private bool IsClient = true;
         private bool IsListening = false;
+        private bool IsConnected = false;
         private string? ClientIP;
         private IPAddress IP = IPAddress.Any;
         private IPAddress RemoteIP = IPAddress.Any;
@@ -18,7 +24,8 @@ namespace TCP_Client_Server
         private int RemotePort;
         private TcpListener? Listener;
         private TcpClient? Client;
-        private IAsyncResult ConnectionStatus;
+        private IAsyncResult? ConnectionStatus;
+        private NetworkStream? DataStream;
 
         public DefaultForm()
         {
@@ -31,6 +38,11 @@ namespace TCP_Client_Server
         private void FormSetup()
         {
             this.MinimumSize = new Size(MinimalWidth, MinimalHeight);
+
+            if (IsClient)
+                RadioButtonModeClient.Checked = true;
+            else
+                RadioButtonModeServer.Checked = true;
             TextBoxIP.Text = IP.ToString();
             TextBoxPort.Text = Port.ToString();
             ConnectionLocker(false);
@@ -172,12 +184,12 @@ namespace TCP_Client_Server
             return port;
         }
 
-        private async void ConnectionStart()
+        private void ConnectionStart()
         {
             if (IsClient)
             {
                 Client = new TcpClient();
-                await Client.ConnectAsync(IP, Port);
+                ConnectionStatus = Client.BeginConnect(IP, Port, ConnectionCatched, null);
             }
             else
             {
@@ -185,31 +197,55 @@ namespace TCP_Client_Server
                 Listener.Start();
                 ConnectionStatus = Listener.BeginAcceptTcpClient(ConnectionCatched, null);
                 IsListening = true;
-                ConnectionCycle();
+                MessageRecieveCycle();
             }
         }
 
         private void ConnectionCatched(IAsyncResult ar)
         {
-            if (IsListening)
+            if (ConnectionStatus != null)
             {
-                Client = Listener?.EndAcceptTcpClient(ConnectionStatus);
+                if (IsClient)
+                {
+                    try
+                    {
+                        Client?.EndConnect(ConnectionStatus);
+                        DataStream = Client?.GetStream();
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        Client = Listener?.EndAcceptTcpClient(ConnectionStatus);
+                        DataStream = Client?.GetStream();
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        return;
+                    }
+                }
 
                 if (Client != null)
                 {
+                    IsConnected = true;
                     IPEndPoint? remoteEndPoint = (IPEndPoint?)Client.Client.RemoteEndPoint;
 
                     if (remoteEndPoint != null)
                     {
-                        RemoteIP = remoteEndPoint.Address;
+                        RemoteIP = remoteEndPoint.Address.MapToIPv4();
                         RemotePort = remoteEndPoint.Port;
                     }
+                    Print("Соединение с " + RemoteIP + ":" + RemotePort + " было установлено.");
                 }
-                Print("Соединение с " + RemoteIP + ":" + RemotePort + " было установлено.");
             }
         }
 
-        private async void ConnectionCycle()
+        /* private async void ConnectionCycle()
         {
             if (IsClient)
             {
@@ -218,17 +254,20 @@ namespace TCP_Client_Server
             else
             {
                 await MessageRecieve();
-                /* if (Client != null)
-                    while (Client.Connected)
-                        TextBoxReciever.Text += MessageGet(); */
+                await Task.Factory.StartNew(async () =>
+                {
+                    await MessageRecieve();
+                });
             }
-        }
+        } */
 
         private void ConnectionStop()
         {
             Client?.Close();
             Listener?.Stop();
+            DataStream?.Dispose();
             IsListening = false;
+            IsConnected = false;
         }
 
         private void ConnectionLocker(bool status)
@@ -263,17 +302,16 @@ namespace TCP_Client_Server
         {
             if (IsClient)
             {
-                if (Client != null)
+                if (Client != null && DataStream != null)
                 {
-                    NetworkStream stream = Client.GetStream();
-                    byte[] messageBytes = Encoding.ASCII.GetBytes(message);
+                    byte[] messageBytes = Encoding.UTF8.GetBytes(message);
                     int length = messageBytes.Length;
                     byte[] lengthBytes = BitConverter.GetBytes(length);
 
                     if (BitConverter.IsLittleEndian)
                         Array.Reverse(lengthBytes);
-                    stream.Write(lengthBytes, 0, lengthBytes.Length);
-                    stream.Write(messageBytes, 0, length);
+                    DataStream.Write(lengthBytes, 0, lengthBytes.Length);
+                    DataStream.Write(messageBytes, 0, length);
                 }
             }
             else
@@ -282,60 +320,73 @@ namespace TCP_Client_Server
             }
         }
 
-        private async Task MessageRecieve()
+        private void MessageRecieveCycle()
         {
-            while (IsListening)
+            Task.Run(() =>
             {
-                await Task.Factory.StartNew(() =>
+                while (IsListening)
                 {
-                    if (Client != null && Client.Connected)
-                        Print(MessagePull());
-                });
-            }
+                    if (IsConnected && DataStream != null)
+                        if (DataStream.DataAvailable)
+                            Print(MessagePull());
+                }
+            });
         }
 
         private string MessagePull()
         {
-            if (IsListening)
+            if (IsClient)
             {
-                if (IsClient)
-                {
 
-                }
-                else
-                {
-                    byte[] lengthBytes = ReadBytes(sizeof(int));
+            }
+            else
+            {
+                byte[]? lengthBytes = MessageReadBytes(sizeof(int)).Result;
 
+                if (lengthBytes != null)
+                {
                     if (BitConverter.IsLittleEndian)
                         Array.Reverse(lengthBytes);
                     int length = BitConverter.ToInt32(lengthBytes, 0);
-                    byte[] messageBytes = ReadBytes(length);
-                    string message = Encoding.ASCII.GetString(messageBytes);
-                    return message;
+                    byte[]? messageBytes = MessageReadBytes(length).Result;
+
+                    if (messageBytes != null)
+                    {
+                        string message = Encoding.UTF8.GetString(messageBytes);
+                        return message;
+                    }
                 }
             }
             return "";
         }
 
-        private byte[] ReadBytes(int count)
+        private async Task<byte[]?> MessageReadBytes(int count)
         {
-            byte[] bytes = new byte[count];
+            byte[]? bytes = null;
 
-            if (IsListening && Client != null)
+            if (Client != null && DataStream != null)
             {
-                NetworkStream stream = Client.GetStream();
-                int readedCount = 0;
-
-                while (readedCount < count)
+                try
                 {
-                    int l = count - readedCount;
-                    int r = stream.Read(bytes, readedCount, l);
+                    bytes = new byte[count];
+                    await DataStream.ReadAsync(bytes, 0, count);
+                    /* int readedCount = 0;
 
-                    if (r == 0)
+                    while (Client.Connected && readedCount < count)
                     {
-                        //throw new Exception("Соединение потерено при передаче данных.");
-                    }
-                    readedCount += r;
+                        int l = count - readedCount;
+                        int r = DataStream.Read(bytes, readedCount, l);
+
+                        if (r == 0)
+                        {
+                            //throw new Exception("Соединение потерено при передаче данных.");
+                        }
+                        readedCount += r;
+                    } */
+                }
+                catch (ObjectDisposedException)
+                {
+                    return null;
                 }
             }
             return bytes;
@@ -359,6 +410,8 @@ namespace TCP_Client_Server
         private void RadioButtonModeClient_CheckedChanged(object sender, EventArgs e)
         {
             IsClient = true;
+            ButtonConnect.Text = ClientStart;
+            ButtonDisconnect.Text = ClientStop;
 
             if (RadioButtonModeClient.Checked)
                 TextBoxIP.Text = ClientIP;
@@ -368,6 +421,8 @@ namespace TCP_Client_Server
         private void RadioButtonModeServer_CheckedChanged(object sender, EventArgs e)
         {
             IsClient = false;
+            ButtonConnect.Text = ServerStart;
+            ButtonDisconnect.Text = ServerStop;
 
             if (RadioButtonModeServer.Checked)
                 ClientIP = TextBoxIP.Text;
@@ -377,7 +432,7 @@ namespace TCP_Client_Server
 
         private void ButtonConnect_Click(object sender, EventArgs e)
         {
-            if (!IsListening)
+            if (!IsListening && !IsConnected)
                 if (SetIP() && SetPort())
                 {
                     ConnectionStart();
@@ -393,8 +448,11 @@ namespace TCP_Client_Server
 
         private void ButtonSender_Click(object sender, EventArgs e)
         {
-            MessageSend(TextBoxSender.Text);
-            TextBoxSender.Text = string.Empty;
+            if (TextBoxSender.Text != String.Empty)
+            {
+                MessageSend(TextBoxSender.Text);
+                TextBoxSender.Text = string.Empty;
+            }
         }
     }
 }

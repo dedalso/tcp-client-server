@@ -93,13 +93,11 @@
             // RadioButtonModeClient
             // 
             RadioButtonModeClient.AutoSize = true;
-            RadioButtonModeClient.Checked = true;
             RadioButtonModeClient.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
             RadioButtonModeClient.Location = new Point(52, 67);
             RadioButtonModeClient.Name = "RadioButtonModeClient";
             RadioButtonModeClient.Size = new Size(78, 25);
             RadioButtonModeClient.TabIndex = 2;
-            RadioButtonModeClient.TabStop = true;
             RadioButtonModeClient.Text = "Клиент";
             RadioButtonModeClient.UseVisualStyleBackColor = true;
             RadioButtonModeClient.CheckedChanged += RadioButtonModeClient_CheckedChanged;
@@ -162,7 +160,6 @@
             ButtonConnect.Name = "ButtonConnect";
             ButtonConnect.Size = new Size(138, 23);
             ButtonConnect.TabIndex = 8;
-            ButtonConnect.Text = "Соединиться";
             ButtonConnect.UseVisualStyleBackColor = true;
             ButtonConnect.Click += ButtonConnect_Click;
             // 
@@ -173,7 +170,6 @@
             ButtonDisconnect.Name = "ButtonDisconnect";
             ButtonDisconnect.Size = new Size(138, 23);
             ButtonDisconnect.TabIndex = 9;
-            ButtonDisconnect.Text = "Отключиться";
             ButtonDisconnect.UseVisualStyleBackColor = true;
             ButtonDisconnect.Click += ButtonDisconnect_Click;
             // 
