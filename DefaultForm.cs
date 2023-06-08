@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
@@ -26,6 +27,10 @@ namespace TCP_Client_Server
         private TcpClient? Client;
         private IAsyncResult? ConnectionStatus;
         private NetworkStream? DataStream;
+        private const string PortErrorTitle = "Ошибка порта";
+        private const string PortIsUnavailableMessage = "Указанный порт занят или закрыт.";
+        private const string LostConnectionTitle = "Ошибка соединения";
+        private const string LostConnectionMessage = "Подключение было разорвано.";
 
         public DefaultForm()
         {
@@ -83,21 +88,20 @@ namespace TCP_Client_Server
         {
             string port = TextBoxPort.Text;
             int status = ValidatePort(port);
-            string messageTitle = "Ошибка порта";
 
             if (status == -1)
             {
-                MessageBox.Show("Порт введён в нечисловом формате. Задайте порт от 0 до " + IPEndPoint.MaxPort + ".", messageTitle);
+                MessageBox.Show("Порт введён в нечисловом формате. Задайте порт от 0 до " + IPEndPoint.MaxPort + ".", PortErrorTitle);
                 return false;
             }
             else if (status == -2)
             {
-                MessageBox.Show("Невозможное значение порта. Задайте порт от 0 до " + IPEndPoint.MaxPort + ".", messageTitle);
+                MessageBox.Show("Невозможное значение порта. Задайте порт от 0 до " + IPEndPoint.MaxPort + ".", PortErrorTitle);
                 return false;
             }
             else if (status == -3)
             {
-                MessageBox.Show("Указанный порт занят или закрыт.", messageTitle);
+                MessageBox.Show(PortIsUnavailableMessage, PortErrorTitle);
                 return false;
             }
             Port = int.Parse(port);
@@ -147,18 +151,7 @@ namespace TCP_Client_Server
             {
                 try
                 {
-                    if (IsClient)
-                    {
-                        TcpClient client = new();
-                        client.Connect(IP, port);
-                        client.Close();
-                    }
-                    else
-                    {
-                        TcpListener listener = new(IP, port);
-                        listener.Start();
-                        listener.Stop();
-                    }
+                    ConnectionStart(port);
                 }
                 catch (SocketException)
                 {
@@ -184,55 +177,59 @@ namespace TCP_Client_Server
             return port;
         }
 
-        private void ConnectionStart()
+        private void ConnectionStart(int port)
         {
-            if (IsClient)
+            try
             {
-                Client = new TcpClient();
-                ConnectionStatus = Client.BeginConnect(IP, Port, ConnectionCatched, null);
+                if (IsClient)
+                {
+                    Client = new();
+                    ConnectionStatus = Client.BeginConnect(IP, port, ConnectionCatched, null);
+                }
+                else
+                {
+                    Listener = new(IP, port);
+                    Listener.Start();
+                    ConnectionStatus = Listener.BeginAcceptTcpClient(ConnectionCatched, null);
+                }
             }
-            else
+            catch (SocketException)
             {
-                Listener = new TcpListener(IP, Port);
-                Listener.Start();
-                ConnectionStatus = Listener.BeginAcceptTcpClient(ConnectionCatched, null);
-                IsListening = true;
-                MessageRecieveCycle();
+                Client?.Close();
+                Listener?.Stop();
+                throw new SocketException();
             }
+            IsListening = true;
+            MessageRecieveCycle();
+            ConnectionLocker(true);
         }
 
         private void ConnectionCatched(IAsyncResult ar)
         {
             if (ConnectionStatus != null)
             {
-                if (IsClient)
+                try
                 {
-                    try
-                    {
+                    if (IsClient)
                         Client?.EndConnect(ConnectionStatus);
-                        DataStream = Client?.GetStream();
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        return;
-                    }
-                }
-                else
-                {
-                    try
-                    {
+                    else
                         Client = Listener?.EndAcceptTcpClient(ConnectionStatus);
-                        DataStream = Client?.GetStream();
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        return;
-                    }
+                }
+                catch (Exception e)
+                {
+                    ConnectionStop();
+
+                    if (e is SocketException)
+                        MessageBox.Show(PortIsUnavailableMessage, PortErrorTitle);
+                    return;
                 }
 
                 if (Client != null)
                 {
                     IsConnected = true;
+                    IsListening = false;
+                    DataStream = Client.GetStream();
+                    Client.NoDelay = true;
                     IPEndPoint? remoteEndPoint = (IPEndPoint?)Client.Client.RemoteEndPoint;
 
                     if (remoteEndPoint != null)
@@ -240,26 +237,14 @@ namespace TCP_Client_Server
                         RemoteIP = remoteEndPoint.Address.MapToIPv4();
                         RemotePort = remoteEndPoint.Port;
                     }
+                    Invoke(() =>
+                    {
+                        ButtonSender.Enabled = true;
+                    });
                     Print("Соединение с " + RemoteIP + ":" + RemotePort + " было установлено.");
                 }
             }
         }
-
-        /* private async void ConnectionCycle()
-        {
-            if (IsClient)
-            {
-
-            }
-            else
-            {
-                await MessageRecieve();
-                await Task.Factory.StartNew(async () =>
-                {
-                    await MessageRecieve();
-                });
-            }
-        } */
 
         private void ConnectionStop()
         {
@@ -268,6 +253,10 @@ namespace TCP_Client_Server
             DataStream?.Dispose();
             IsListening = false;
             IsConnected = false;
+            Invoke(() =>
+            {
+                ConnectionLocker(false);
+            });
         }
 
         private void ConnectionLocker(bool status)
@@ -280,7 +269,7 @@ namespace TCP_Client_Server
                 TextBoxPort.ReadOnly = true;
                 ButtonConnect.Enabled = false;
                 ButtonDisconnect.Enabled = true;
-                ButtonSender.Enabled = true;
+                ButtonSender.Enabled = false;
             }
             else
             {
@@ -300,9 +289,9 @@ namespace TCP_Client_Server
 
         private void MessageSend(string message)
         {
-            if (IsClient)
+            if (Client != null && DataStream != null)
             {
-                if (Client != null && DataStream != null)
+                if (DataStream.CanWrite)
                 {
                     byte[] messageBytes = Encoding.UTF8.GetBytes(message);
                     int length = messageBytes.Length;
@@ -310,13 +299,20 @@ namespace TCP_Client_Server
 
                     if (BitConverter.IsLittleEndian)
                         Array.Reverse(lengthBytes);
-                    DataStream.Write(lengthBytes, 0, lengthBytes.Length);
-                    DataStream.Write(messageBytes, 0, length);
+
+                    try
+                    {
+                        DataStream.Write(lengthBytes, 0, lengthBytes.Length);
+                        DataStream.Write(messageBytes, 0, length);
+                    }
+                    catch (IOException)
+                    {
+                        ConnectionStop();
+                        MessageBox.Show(LostConnectionMessage, LostConnectionTitle);
+                    }
                 }
-            }
-            else
-            {
-                //
+                else
+                    MessageBox.Show("Сейчас отправка невозможна, так как идёт запись в сетевой поток.", "Ошибка отправки");
             }
         }
 
@@ -324,65 +320,74 @@ namespace TCP_Client_Server
         {
             Task.Run(() =>
             {
-                while (IsListening)
+                while (IsListening != IsConnected)
                 {
-                    if (IsConnected && DataStream != null)
-                        if (DataStream.DataAvailable)
-                            Print(MessagePull());
+                    Debug.WriteLine("...");
+
+                    if (Client != null && DataStream != null)
+                    {
+                        try
+                        {
+                            if (DataStream.DataAvailable)
+                                Print(RemoteIP + ":" + RemotePort + " - " + MessagePull());
+                            else if (Client.Client != null && Client.Client.Poll(1, SelectMode.SelectRead) && Client.Client.Available == 0)
+                            {
+                                ConnectionStop();
+                                Print("Соединение с " + RemoteIP + ":" + RemotePort + " было разорвано.");
+                            }
+                        }
+                        catch (Exception) { }
+                    }
                 }
             });
         }
 
-        private string MessagePull()
+        private string? MessagePull()
         {
-            if (IsClient)
-            {
+            byte[]? lengthBytes = MessageReadBytes(sizeof(int));
 
-            }
-            else
+            if (lengthBytes != null)
             {
-                byte[]? lengthBytes = MessageReadBytes(sizeof(int)).Result;
+                if (BitConverter.IsLittleEndian)
+                    Array.Reverse(lengthBytes);
+                int length = BitConverter.ToInt32(lengthBytes, 0);
+                byte[]? messageBytes = MessageReadBytes(length);
 
-                if (lengthBytes != null)
+                if (messageBytes != null)
+                    return Encoding.UTF8.GetString(messageBytes);
+                else
                 {
-                    if (BitConverter.IsLittleEndian)
-                        Array.Reverse(lengthBytes);
-                    int length = BitConverter.ToInt32(lengthBytes, 0);
-                    byte[]? messageBytes = MessageReadBytes(length).Result;
-
-                    if (messageBytes != null)
-                    {
-                        string message = Encoding.UTF8.GetString(messageBytes);
-                        return message;
-                    }
+                    MessageBox.Show(LostConnectionMessage, LostConnectionTitle);
+                    return null;
                 }
             }
-            return "";
+            return null;
         }
 
-        private async Task<byte[]?> MessageReadBytes(int count)
+        private byte[]? MessageReadBytes(int count)
         {
             byte[]? bytes = null;
 
-            if (Client != null && DataStream != null)
+            if (DataStream != null)
             {
                 try
                 {
                     bytes = new byte[count];
-                    await DataStream.ReadAsync(bytes, 0, count);
-                    /* int readedCount = 0;
+                    int readedCount = 0;
 
-                    while (Client.Connected && readedCount < count)
+                    while (readedCount < count)
                     {
                         int l = count - readedCount;
                         int r = DataStream.Read(bytes, readedCount, l);
 
                         if (r == 0)
                         {
-                            //throw new Exception("Соединение потерено при передаче данных.");
+                            ConnectionStop();
+                            MessageBox.Show(LostConnectionMessage, LostConnectionTitle);
+                            return null;
                         }
                         readedCount += r;
-                    } */
+                    }
                 }
                 catch (ObjectDisposedException)
                 {
@@ -394,17 +399,14 @@ namespace TCP_Client_Server
 
         private void Print(string message)
         {
-            if (message != string.Empty)
-            {
-                DateTime time = DateTime.Now;
+            DateTime time = DateTime.Now;
 
-                Invoke(() =>
-                {
-                    TextBoxReciever.Text += time.ToString("[HH:mm:ss]") + " " + message + Environment.NewLine;
-                    TextBoxReciever.SelectionStart = TextBoxReciever.Text.Length;
-                    TextBoxReciever.ScrollToCaret();
-                });
-            }
+            Invoke(() =>
+            {
+                TextBoxReciever.Text += time.ToString("[HH:mm:ss]") + " " + message + Environment.NewLine;
+                TextBoxReciever.SelectionStart = TextBoxReciever.Text.Length;
+                TextBoxReciever.ScrollToCaret();
+            });
         }
 
         private void RadioButtonModeClient_CheckedChanged(object sender, EventArgs e)
@@ -433,22 +435,20 @@ namespace TCP_Client_Server
         private void ButtonConnect_Click(object sender, EventArgs e)
         {
             if (!IsListening && !IsConnected)
-                if (SetIP() && SetPort())
-                {
-                    ConnectionStart();
-                    ConnectionLocker(true);
-                }
+                if (SetIP())
+                    SetPort();
         }
 
         private void ButtonDisconnect_Click(object sender, EventArgs e)
         {
+            if (IsConnected)
+                Print("Соединение с " + RemoteIP + ":" + RemotePort + " было разорвано.");
             ConnectionStop();
-            ConnectionLocker(false);
         }
 
         private void ButtonSender_Click(object sender, EventArgs e)
         {
-            if (TextBoxSender.Text != String.Empty)
+            if (IsConnected && TextBoxSender.Text != String.Empty)
             {
                 MessageSend(TextBoxSender.Text);
                 TextBoxSender.Text = string.Empty;
